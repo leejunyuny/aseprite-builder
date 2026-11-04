@@ -1,10 +1,12 @@
-﻿name: Build Aseprite
+name: Build Aseprite
 on:
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     permissions:
       contents: write
     steps:

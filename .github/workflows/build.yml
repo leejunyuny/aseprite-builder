@@ -1,4 +1,5 @@
 name: Build Aseprite
+
 on:
   workflow_dispatch:
 
@@ -9,6 +10,7 @@ jobs:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     permissions:
       contents: write
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -66,7 +68,7 @@ jobs:
           mkdir $abs_build -Force
           Set-Location $abs_build
           cmake -G Ninja `
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo `
+            -DCMAKE_BUILD_TYPE=Release `
             -DLAF_BACKEND=skia `
             -DSKIA_DIR="$abs_skia" `
             -DSKIA_LIBRARY_DIR="$abs_skia\out\Release-x64" `
@@ -83,19 +85,6 @@ jobs:
           $jobs = [math]::Min($cpuCount * 2, 8)
           Write-Host "Using $jobs parallel compilation jobs"
           ninja -j $jobs
-
-      - name: Collect Dependencies (DLLs)
-        shell: powershell
-        run: |
-          $binDir = "$env:GITHUB_WORKSPACE\build\bin"
-          $sslDir = "C:\Program Files\OpenSSL\bin"
-          if (Test-Path "$sslDir\libcrypto-3-x64.dll") {
-              Copy-Item "$sslDir\libcrypto-3-x64.dll" -Destination $binDir -Force
-              Copy-Item "$sslDir\libssl-3-x64.dll" -Destination $binDir -Force
-              echo "[+] DLLs copied to $binDir"
-          } else {
-              echo "[!] OpenSSL DLLs not found - skipping"
-          }
 
       - name: Package Installer (Inno Setup)
         shell: powershell
@@ -119,16 +108,6 @@ jobs:
           mkdir installer -Force
           $iss | Out-File -FilePath "aseprite.iss" -Encoding utf8
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" aseprite.iss
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        if: success()
-        with:
-          tag_name: ${{ env.ASE_VER }}
-          name: Aseprite ${{ env.ASE_VER }}
-          files: installer/*.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

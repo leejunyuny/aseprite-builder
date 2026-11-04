@@ -52,8 +52,8 @@ jobs:
         shell: powershell
         run: |
           Invoke-WebRequest -Uri "https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-Windows-Release-x64.zip" -OutFile "skia.zip" -UseBasicParsing
-          mkdir skia -Force
-          Expand-Archive -Force "skia.zip" "skia"
+          mkdir "aseprite/skia" -Force
+          Expand-Archive -Force "skia.zip" "aseprite/skia"
           Write-Host "Skia extracted successfully"
 
       - name: Initialize MSVC Environment
@@ -63,7 +63,7 @@ jobs:
         shell: powershell
         run: |
           $abs_src = Join-Path $env:GITHUB_WORKSPACE "aseprite"
-          $abs_skia = Join-Path $env:GITHUB_WORKSPACE "skia"
+          $abs_skia = Join-Path $abs_src "skia"
           $abs_build = Join-Path $env:GITHUB_WORKSPACE "build"
           mkdir $abs_build -Force
           Set-Location $abs_build
